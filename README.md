@@ -10,6 +10,9 @@ This works by going to vrchat's log file and getting the save string that you'd 
 * Just run the executable that exists on the [releases page](https://github.com/fuzzyCute/Idle_home_Auto_save/releases/tag/version_1_0)
 
 Uppon starting the program it'll ask you for a number, which will represent the time between each scan to the log file.
+It'll then create a new file on your Desktop called *save_times.log* with the date followed by the code of the save.
+
+![log](https://user-images.githubusercontent.com/22378193/236639137-d08fdf5b-9c25-4516-8de4-9d3cd6052f1b.PNG)
 
 ## Disclaymer
 I did this tool because I'm a bit lazy, but I held no responsibility for what could happen if you run this
