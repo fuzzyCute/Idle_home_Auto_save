@@ -1,18 +1,16 @@
-# version 1.1
+# version 1.1.1
 
-# have a graphic interface that allows the users to:
-#  input the path to where they want to store the save files
-#  input the time in seconds between each search
-#  a button that both start and stop the program
-#  a Text widget that's read-only that shows the last 10 outputs from the program
-#    this text widget will be updated every time does a search, and it'll display the time and message
+# Added open notepad file (Thank you M1XZG)
+# Add a button that clips the last string to the clipboard
+# add a config file
 
-# this graphic interface will be made with tkinter
 
 import os
+import sys
 import time
 import tkinter as tk
 import tkinter.filedialog as filedialog
+import pyperclip
 
 import threading
 
@@ -28,23 +26,27 @@ class MainProgramGUI(tk.Tk):
         # start the variables
         self.vrchat_path = os.environ['USERPROFILE'] + '\\AppData\\LocalLow\\VRChat\\VRChat'
 
-        self.path = ""
+        self.folder_path = ""
         self.save_file_path = ""
         self.time = 0
         self.is_running = False
+
+        # get the current file folder_path, this is going to be used for a config file
+        exe_file = sys.argv[0]
+        self.current_exec_file_path = os.path.dirname(os.path.abspath(exe_file))
 
         # create the GUI elements or widgets or what's the name you give them
 
         # lets make it a grid system
 
-        ######### path #########
+        ######### folder_path #########
 
         self.path_label = tk.Label(self, text="Path to the save file:")
         self.path_entry = tk.Entry(self, width=60)
         self.path_entry.config(state="disabled")
-        self.path_button = tk.Button(self, text="Select path", command=self.select_path)
+        self.path_button = tk.Button(self, text="Select folder_path", command=self.select_path)
 
-        # place the path on the grid
+        # place the folder_path on the grid
 
         self.path_label.grid(row=0, column=0, padx=5, pady=5, sticky="E")
         self.path_entry.grid(row=0, column=1, padx=5, pady=5, sticky="W")
@@ -54,6 +56,7 @@ class MainProgramGUI(tk.Tk):
 
         self.name_label = tk.Label(self, text="Name of the file:")
         self.name_entry = tk.Entry(self, width=30)
+        self.name_entry.bind("<KeyRelease>", self.update_path)
         self.name_explain = tk.Label(self, text="name + extension (ex: save.txt)")
 
         # place the name on the grid
@@ -73,9 +76,20 @@ class MainProgramGUI(tk.Tk):
         self.time_entry.grid(row=2, column=1, padx=5, pady=5, sticky="W")
         self.time_explain.grid(row=2, column=2, padx=5, pady=5, sticky="W")
 
-        # add a button to open self.save_file_path using notepad.exe to see the saves    
+        ######### add a button to open self.save_file_path using notepad.exe to see the saves #########
+        self.open_button = tk.Button(self, text="Open Save file", command=self.open_save_file)
 
-        self.open_button = tk.Button(self, text="Open Save file", command=lambda: os.system(f"notepad.exe {self.save_file_path}"))
+        # place the button on the grid
+
+        self.open_button.grid(row=3, column=2, padx=5, pady=5)
+
+        ######### copy last save to clipboard  #########
+
+        self.copy_button = tk.Button(self, text="Copy last save to clipboard", command=self.copy_to_clipboard)
+
+        # place the button on the grid
+
+        self.copy_button.grid(row=3, column=0, padx=5, pady=5)
 
         ######### start/stop button #########
 
@@ -83,8 +97,7 @@ class MainProgramGUI(tk.Tk):
 
         # place the button on the grid
 
-        self.open_button.grid(row=3, column=2, padx=5, pady=5)
-        self.start_button.grid(row=3, column=0, padx=5, pady=5, columnspan=3)
+        self.start_button.grid(row=4, column=0, padx=5, pady=5, columnspan=3)
 
         ######### last outputs #########
 
@@ -94,68 +107,141 @@ class MainProgramGUI(tk.Tk):
 
         # place the last outputs on the grid
 
-        self.last_outputs_label.grid(row=4, column=0, padx=5, pady=5, columnspan=3)
-        self.last_outputs_text.grid(row=5, column=0, padx=5, pady=5, columnspan=3)
+        self.last_outputs_label.grid(row=5, column=0, padx=5, pady=5, columnspan=3)
+        self.last_outputs_text.grid(row=6, column=0, padx=5, pady=5, columnspan=3)
 
         # let's lock the size of the window
         self.resizable(False, False)
+
+        self.loadConfig()
+
+    def loadConfig(self):
+        if os.path.exists(os.path.join(self.current_exec_file_path, "config.ini")):
+            try:
+                with open(os.path.join(self.current_exec_file_path, "config.ini"), "r") as f:
+                    lines = f.readlines()
+                    self.folder_path = lines[0].split(" : ")[1].strip()
+                    self.save_file_path = lines[1].split(" : ")[1].strip()
+                    self.time = int(lines[2].split(" : ")[1].strip())
+                    self.name_entry.insert(tk.END, lines[3].split(" : ")[1].strip())
+                    self.path_entry.config(state="normal")
+                    self.path_entry.insert(tk.END, self.folder_path)
+                    self.path_entry.config(state="disabled")
+                    self.time_entry.insert(tk.END, f"{self.time}")
+                    self.save_file_path = os.path.join(self.folder_path, self.name_entry.get())
+                self.update_last_outputs("Config file loaded")
+            except:
+                self.update_last_outputs("Error while loading config file")
+                self.update_last_outputs("Delete the old one and Re-open the program")
+        else:
+            self.update_last_outputs("Config file doesn't exist")
+            self.update_last_outputs("Creating a new one")
+
+            with open(os.path.join(self.current_exec_file_path, "config.ini"), "w") as f:
+                f.write("folder_path : \n")
+                f.write("save_file_path : \n")
+                f.write("time : \n")
+                f.write("name : \n")
+
+            self.update_last_outputs("Config file created at : " + os.path.join(self.current_exec_file_path, "config.ini"))
 
     def select_path(self):
         path = filedialog.askdirectory()
         if path:
             self.path_entry.config(state="normal")
-            self.path = path
+            self.folder_path = path
             self.path_entry.insert(tk.END, path)
             self.path_entry.config(state="disabled")
 
+    def update_path(self, event):
+        self.save_file_path = os.path.join(self.folder_path, self.name_entry.get())
+
+    def open_save_file(self):
+        if self.save_file_path:
+            if os.path.exists(self.save_file_path):
+                os.system("notepad.exe " + self.save_file_path)
+            else:
+                self.update_last_outputs("File doesn't exist")
+        else:
+            self.update_last_outputs("Please select a folder_path")
+
     def start_stop(self):
 
-        #check if path is not empty
-        if not self.path:
-            self.update_last_outputs("Please select a path")
+        # check if folder_path is not empty
+        if not self.folder_path:
+            self.update_last_outputs("Please select a folder_path")
             return
 
-        #now check if there's a file name
+        # now check if there's a file name
         if not self.name_entry.get():
             self.update_last_outputs("Please input a file name")
             return
 
-        #now check if there's a time and its of the type int
+        # now check if there's a time and its of the type int
         try:
             int(self.time_entry.get())
         except ValueError:
             self.update_last_outputs("Please input a number for the time")
             return
 
-        #now check if the time is not 0
+        # now check if the time is not 0
         if int(self.time_entry.get()) < 0 or int(self.time_entry.get()) == 0:
             self.update_last_outputs("Please input a number bigger than 0")
             return
 
-        #start the saves
+        # start the saves
 
         if not self.is_running:
-            #start the thread
+            # start the thread
             self.is_running = True
             self.start_button.config(text="Stop")
             self.time = int(self.time_entry.get())
-            self.save_file_path = os.path.join(self.path, self.name_entry.get())
+            self.save_file_path = os.path.join(self.folder_path, self.name_entry.get())
 
-            #disable the widgets
+            # disable the widgets
             self.path_button.config(state="disabled")
             self.name_entry.config(state="disabled")
             self.time_entry.config(state="disabled")
 
+            #disable the copy and open buttons
+            self.copy_button.config(state="disabled")
+            self.open_button.config(state="disabled")
 
             # check if the file exists, if not creates it
             if not os.path.exists(self.save_file_path):
                 with open(self.save_file_path, 'w') as file:
                     file.write('')
+                self.update_last_outputs("No save file found, creating a new one")
+                self.update_last_outputs(f"Save file created")
+            else:
+                self.update_last_outputs("Save file found")
 
             self.thread = threading.Thread(target=self.start_saves, daemon=True)
             self.thread.start()
         else:
             self.stop_saves()
+
+    def copy_to_clipboard(self):
+        if self.save_file_path and os.path.exists(self.save_file_path):
+            try:
+                # open the save file and get the lines
+                with open(self.save_file_path, 'r') as file:
+                    the_list = file.readlines()
+                # get the dates
+                dates = []
+                for line in the_list:
+                    dates.append(line.split(' -> ')[0])
+                # get the most recent date
+                most_recent = max(dates)
+                # get the index of the most recent date
+                index = dates.index(most_recent)
+                # return the most recent line
+                pyperclip.copy(the_list[index].split()[-1])
+                self.update_last_outputs("Last save copied to clipboard")
+            except:
+                self.update_last_outputs("No save found")
+        else:
+            self.update_last_outputs("No save file found")
 
     def update_last_outputs(self, text):
         self.last_outputs_text.config(state="normal")
@@ -164,6 +250,11 @@ class MainProgramGUI(tk.Tk):
 
     def start_saves(self):
         self.update_last_outputs("Program started")
+        with open(os.path.join(self.current_exec_file_path, "config.ini"), "w") as f:
+            f.write(f"folder_path : {self.folder_path}\n")
+            f.write(f"save_file_path : {self.save_file_path}\n")
+            f.write(f"time : {self.time}\n")
+            f.write(f"name : {self.name_entry.get()}\n")
         while self.is_running:
             # first find the vrchat logs
             vrchat_logs = self.find_more_recent_txt_files(self.vrchat_path)
@@ -183,6 +274,11 @@ class MainProgramGUI(tk.Tk):
         self.path_button.config(state="normal")
         self.name_entry.config(state="normal")
         self.time_entry.config(state="normal")
+
+        #enable the copy and open buttons
+
+        self.copy_button.config(state="normal")
+        self.open_button.config(state="normal")
 
     def stop_saves(self):
         self.is_running = False
@@ -228,7 +324,7 @@ class MainProgramGUI(tk.Tk):
                 for line in final:
                     file.write(line + '\n')
 
+
 if __name__ == "__main__":
     main = MainProgramGUI()
     main.mainloop()
-
