@@ -73,12 +73,17 @@ class MainProgramGUI(tk.Tk):
         self.time_entry.grid(row=2, column=1, padx=5, pady=5, sticky="W")
         self.time_explain.grid(row=2, column=2, padx=5, pady=5, sticky="W")
 
+        # add a button to open self.save_file_path using notepad.exe to see the saves    
+
+        self.open_button = tk.Button(self, text="Open Save file", command=lambda: os.system(f"notepad.exe {self.save_file_path}"))
+
         ######### start/stop button #########
 
         self.start_button = tk.Button(self, text="Start", command=self.start_stop)
 
         # place the button on the grid
 
+        self.open_button.grid(row=3, column=2, padx=5, pady=5)
         self.start_button.grid(row=3, column=0, padx=5, pady=5, columnspan=3)
 
         ######### last outputs #########
