@@ -1,8 +1,7 @@
-# version 1.1.1
+# version 1.1.2
 
-# Added open notepad file (Thank you M1XZG)
-# Add a button that clips the last string to the clipboard
-# add a config file
+# fixed sorted save files
+# users can now copy to the clipboard the last save without stopping the program
 
 
 import os
@@ -10,6 +9,8 @@ import sys
 import time
 import tkinter as tk
 import tkinter.filedialog as filedialog
+from datetime import datetime
+
 import pyperclip
 
 import threading
@@ -203,8 +204,7 @@ class MainProgramGUI(tk.Tk):
             self.name_entry.config(state="disabled")
             self.time_entry.config(state="disabled")
 
-            #disable the copy and open buttons
-            self.copy_button.config(state="disabled")
+            #disable the open buttons
             self.open_button.config(state="disabled")
 
             # check if the file exists, if not creates it
@@ -275,9 +275,8 @@ class MainProgramGUI(tk.Tk):
         self.name_entry.config(state="normal")
         self.time_entry.config(state="normal")
 
-        #enable the copy and open buttons
+        #enable the open buttons
 
-        self.copy_button.config(state="normal")
         self.open_button.config(state="normal")
 
     def stop_saves(self):
@@ -313,6 +312,7 @@ class MainProgramGUI(tk.Tk):
         with open(self.save_file_path, 'r') as file:
             for line in file.readlines():
                 last_saves.append(line[:-1:])
+
         # combine the two lists into one without repetitive lines
 
         final = list(set(save_times + last_saves))
@@ -320,6 +320,8 @@ class MainProgramGUI(tk.Tk):
             self.update_last_outputs(f"{time.ctime()} ---> No new saves")
         else:
             self.update_last_outputs(f"{time.ctime()} ---> {len(final) - len(last_saves)} New save/s found")
+            #first sorte the list by date
+            final.sort(key=lambda x: datetime.strptime(x.split(' -> ')[0], '%Y.%m.%d - %H:%M:%S'))
             with open(self.save_file_path, 'w') as file:
                 for line in final:
                     file.write(line + '\n')
