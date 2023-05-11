@@ -16,6 +16,7 @@ import pyperclip
 import threading
 
 
+
 # create a class for the gui
 class MainProgramGUI(tk.Tk):
     def __init__(self):
@@ -103,7 +104,7 @@ class MainProgramGUI(tk.Tk):
         ######### last outputs #########
 
         self.last_outputs_label = tk.Label(self, text="Last outputs:")
-        self.last_outputs_text = tk.Text(self, width=70, height=10)
+        self.last_outputs_text = tk.Text(self, width=110, height=10)
         self.last_outputs_text.config(state="disabled")
 
         # place the last outputs on the grid
@@ -261,6 +262,12 @@ class MainProgramGUI(tk.Tk):
 
             # find the last save times
             last_save_time = self.find_last_saved_time(vrchat_logs)
+
+            # Work out the file name and store it
+            log_file_name = os.path.basename(vrchat_logs )
+            #location = os.path.dirname(vrchat_logs )
+            # print the log file we'll be using that was found
+            self.update_last_outputs("Log file found: " + log_file_name)
 
             self.save_to_file(last_save_time)
 
