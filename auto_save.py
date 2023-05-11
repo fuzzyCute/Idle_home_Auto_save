@@ -262,8 +262,13 @@ class MainProgramGUI(tk.Tk):
 
             # find the last save times
             last_save_time = self.find_last_saved_time(vrchat_logs)
+
+            # Work out the file name and store it
+            log_file_name = os.path.basename(vrchat_logs )
+            #location = os.path.dirname(vrchat_logs )
             # print the log file we'll be using that was found
-            self.update_last_outputs("Log file found: " + vrchat_logs)
+            self.update_last_outputs("Log file found: " + log_file_name)
+
             self.save_to_file(last_save_time)
 
             time.sleep(self.time)
