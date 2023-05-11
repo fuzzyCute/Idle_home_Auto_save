@@ -1,7 +1,7 @@
-# version 1.1.2
+# version 1.1.3
 
-# fixed sorted save files
-# users can now copy to the clipboard the last save without stopping the program
+# the log textbox is now wider
+# now the program check all the log files on the folder_path and not just the last one
 
 
 import os
@@ -32,6 +32,9 @@ class MainProgramGUI(tk.Tk):
         self.save_file_path = ""
         self.time = 0
         self.is_running = False
+
+        # to store the number of save files found (it'll be changed everytime the program finds a save file)
+        self.found_save_files = []
 
         # get the current file folder_path, this is going to be used for a config file
         exe_file = sys.argv[0]
@@ -251,6 +254,7 @@ class MainProgramGUI(tk.Tk):
 
     def start_saves(self):
         self.update_last_outputs("Program started")
+
         with open(os.path.join(self.current_exec_file_path, "config.ini"), "w") as f:
             f.write(f"folder_path : {self.folder_path}\n")
             f.write(f"save_file_path : {self.save_file_path}\n")
@@ -262,12 +266,6 @@ class MainProgramGUI(tk.Tk):
 
             # find the last save times
             last_save_time = self.find_last_saved_time(vrchat_logs)
-
-            # Work out the file name and store it
-            log_file_name = os.path.basename(vrchat_logs )
-            #location = os.path.dirname(vrchat_logs )
-            # print the log file we'll be using that was found
-            self.update_last_outputs("Log file found: " + log_file_name)
 
             self.save_to_file(last_save_time)
 
@@ -296,16 +294,22 @@ class MainProgramGUI(tk.Tk):
             for file in files:
                 if file.endswith('.txt'):
                     txt_files.append(os.path.join(root, file))
-        return max(txt_files, key=os.path.getctime)
+
+        for i in txt_files:
+            if i not in self.found_save_files:
+                self.update_last_outputs(f"Log file found: {i}")
+                self.found_save_files.append(i)
+        return txt_files
 
     def find_last_saved_time(self, txt_file):
         save_times = []
-        with open(txt_file, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
-            last_lines = []
-            for line in lines[-100:]:
-                if line.strip():
-                    last_lines.append(line.strip())
+        for i in txt_file:
+            with open(i, 'r', encoding='utf-8') as file:
+                lines = file.readlines()
+                last_lines = []
+                for line in lines[-100:]:
+                    if line.strip():
+                        last_lines.append(line.strip())
         for line in last_lines:
             if '[🦀 Idle Home 🦀] Saved' in line:
                 line = line.split()
