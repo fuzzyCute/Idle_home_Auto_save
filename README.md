@@ -8,7 +8,7 @@ This works by going to vrchat's log file and getting the save string that you'd 
 ## How to use the program
 2 ways:
 * Downloading python and running the program yourself
-* Just run the executable that exists on the [releases page](https://github.com/fuzzyCute/Idle_home_Auto_save/releases/tag/version_1_1_2)
+* Just run the executable that exists on the [releases page](https://github.com/fuzzyCute/Idle_home_Auto_save/releases/tag/version_1_1_3)
 
 ### If you want to run the python code yourself
 Don't forget to install the dependencies, which are included in the requirements.txt file
