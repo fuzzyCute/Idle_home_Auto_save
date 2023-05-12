@@ -1,8 +1,7 @@
-# version 1.1.3
+# version 1.1.4
 
-# the log textbox is now wider
-# now the program check all the log files on the folder_path and not just the last one
-
+# change the number of lines to search from 100 to 1000
+# added a checkbox that allows users to ignore the 1000 lines limit
 
 import os
 import sys
@@ -14,8 +13,6 @@ from datetime import datetime
 import pyperclip
 
 import threading
-
-
 
 # create a class for the gui
 class MainProgramGUI(tk.Tk):
@@ -104,6 +101,16 @@ class MainProgramGUI(tk.Tk):
 
         self.start_button.grid(row=4, column=0, padx=5, pady=5, columnspan=3)
 
+        ######### all_lines checkbox #########
+
+        self.last_all_line_var = -1
+        self.all_lines_var = tk.IntVar()
+        self.all_lines_checkbox = tk.Checkbutton(self, text="Ignore the 1000 lines limit", variable=self.all_lines_var)
+
+        # place the checkbox on the grid next to the start button (bottom, heh)
+
+        self.all_lines_checkbox.grid(row=5, column=0, padx=5, pady=5, columnspan=3)
+
         ######### last outputs #########
 
         self.last_outputs_label = tk.Label(self, text="Last outputs:")
@@ -112,8 +119,8 @@ class MainProgramGUI(tk.Tk):
 
         # place the last outputs on the grid
 
-        self.last_outputs_label.grid(row=5, column=0, padx=5, pady=5, columnspan=3)
-        self.last_outputs_text.grid(row=6, column=0, padx=5, pady=5, columnspan=3)
+        self.last_outputs_label.grid(row=6, column=0, padx=5, pady=5, columnspan=3)
+        self.last_outputs_text.grid(row=7, column=0, padx=5, pady=5, columnspan=3)
 
         # let's lock the size of the window
         self.resizable(False, False)
@@ -261,6 +268,15 @@ class MainProgramGUI(tk.Tk):
             f.write(f"time : {self.time}\n")
             f.write(f"name : {self.name_entry.get()}\n")
         while self.is_running:
+
+            if self.last_all_line_var != self.all_lines_var.get():
+                if self.all_lines_var.get() == 0:
+                    self.update_last_outputs("Will seach only the 1000 last lines")
+                else:
+                    self.update_last_outputs("Will search all lines")
+
+                self.last_all_line_var = self.all_lines_var.get()
+
             # first find the vrchat logs
             vrchat_logs = self.find_more_recent_txt_files(self.vrchat_path)
 
@@ -307,9 +323,16 @@ class MainProgramGUI(tk.Tk):
             with open(i, 'r', encoding='utf-8') as file:
                 lines = file.readlines()
                 last_lines = []
-                for line in lines[-100:]:
-                    if line.strip():
-                        last_lines.append(line.strip())
+                if self.all_lines_var.get() == 0:
+                    #if the user wants to see only the last 1000 lines
+                    for line in lines[-1000:]:
+                        if line.strip():
+                            last_lines.append(line.strip())
+                else:
+                    #the user wants the full log file
+                    for line in lines:
+                        if line.strip():
+                            last_lines.append(line.strip())
         for line in last_lines:
             if '[🦀 Idle Home 🦀] Saved' in line:
                 line = line.split()
