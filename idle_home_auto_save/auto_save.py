@@ -1,10 +1,7 @@
-# version 1.1.4
-
-# change the number of lines to search from 100 to 1000
-# added a checkbox that allows users to ignore the 1000 lines limit
+# version 1.1.5
 
 import os
-import time
+import fnmatch
 import tkinter as tk
 import tkinter.filedialog as filedialog
 from datetime import datetime
@@ -99,16 +96,6 @@ class MainProgramGUI(tk.Tk):
 
         self.start_button.grid(row=4, column=0, padx=5, pady=5, columnspan=3)
 
-        ######### all_lines checkbox #########
-
-        self.last_all_line_var = -1
-        self.all_lines_var = tk.IntVar()
-        self.all_lines_checkbox = tk.Checkbutton(self, text="Ignore the 1000 lines limit", variable=self.all_lines_var)
-
-        # place the checkbox on the grid next to the start button (bottom, heh)
-
-        self.all_lines_checkbox.grid(row=5, column=0, padx=5, pady=5, columnspan=3)
-
         ######### last outputs #########
 
         self.last_outputs_label = tk.Label(self, text="Last outputs:")
@@ -117,8 +104,8 @@ class MainProgramGUI(tk.Tk):
 
         # place the last outputs on the grid
 
-        self.last_outputs_label.grid(row=6, column=0, padx=5, pady=5, columnspan=3)
-        self.last_outputs_text.grid(row=7, column=0, padx=5, pady=5, columnspan=3)
+        self.last_outputs_label.grid(row=5, column=0, padx=5, pady=5, columnspan=3)
+        self.last_outputs_text.grid(row=6, column=0, padx=5, pady=5, columnspan=3)
 
         # let's lock the size of the window
         self.resizable(False, False)
@@ -266,17 +253,8 @@ class MainProgramGUI(tk.Tk):
             f.write(f"time : {self.time}\n")
             f.write(f"name : {self.name_entry.get()}\n")
         while self.is_running:
-
-            if self.last_all_line_var != self.all_lines_var.get():
-                if self.all_lines_var.get() == 0:
-                    self.update_last_outputs("Will seach only the 1000 last lines")
-                else:
-                    self.update_last_outputs("Will search all lines")
-
-                self.last_all_line_var = self.all_lines_var.get()
-
             # first find the vrchat logs
-            vrchat_logs = self.find_more_recent_txt_files(self.vrchat_path)
+            vrchat_logs = self.find_latest_txt_files(self.vrchat_path)
 
             # find the last save times
             last_save_time = self.find_last_saved_time(vrchat_logs)
@@ -305,12 +283,23 @@ class MainProgramGUI(tk.Tk):
         if self.scan_loop_event is not None:
             self.scan_loop_event.set()
 
-    def find_more_recent_txt_files(self, path):
+    def find_latest_txt_files(self, path):
+        nb_files_before = len(self.found_save_files)
+        txt_files = self.find_all_txt_files(path)
+        if nb_files_before == 0:
+            # 1st scan, return everything
+            return txt_files
+        # Otherwise, return all new files + the last one before that,
+        # in case multiple were created at once since the last scan
+        nb_new_files = len(self.found_save_files) - nb_files_before
+        # File names are timestamped in ISO-8601, they will be sorted in ascending date
+        return sorted(txt_files)[-(nb_new_files + 1):]
+
+    def find_all_txt_files(self, path):
         txt_files = []
         for root, dirs, files in os.walk(path):
-            for file in files:
-                if file.endswith('.txt'):
-                    txt_files.append(os.path.join(root, file))
+            for file in fnmatch.filter(files, 'output_log_*.txt'):
+                txt_files.append(os.path.join(root, file))
 
         for i in txt_files:
             if i not in self.found_save_files:
@@ -318,27 +307,16 @@ class MainProgramGUI(tk.Tk):
                 self.found_save_files.append(i)
         return txt_files
 
-    def find_last_saved_time(self, txt_file):
+    def find_last_saved_time(self, txt_files):
         save_times = []
-        for i in txt_file:
-            with open(i, 'r', encoding='utf-8') as file:
-                lines = file.readlines()
-                last_lines = []
-                if self.all_lines_var.get() == 0:
-                    #if the user wants to see only the last 1000 lines
-                    for line in lines[-1000:]:
-                        if line.strip():
-                            last_lines.append(line.strip())
-                else:
-                    #the user wants the full log file
-                    for line in lines:
-                        if line.strip():
-                            last_lines.append(line.strip())
-        for line in last_lines:
-            if '[🦀 Idle Home 🦀] Saved' in line:
-                line = line.split()
-                text_to_save = f"{line[0]} - {line[1]} -> {line[-1]}"
-                save_times.append(text_to_save)
+        for filename in txt_files:
+            self.update_last_outputs(f"Scanning file {filename} ...")
+            with open(filename, 'r', encoding='utf-8') as file:
+                for line in file:
+                    if '[🦀 Idle Home 🦀] Saved' in line:
+                        line = line.strip().split()
+                        text_to_save = f"{line[0]} - {line[1]} -> {line[-1]}"
+                        save_times.append(text_to_save)
         return save_times
 
     def save_to_file(self, save_times):
@@ -352,9 +330,9 @@ class MainProgramGUI(tk.Tk):
 
         final = list(set(save_times + last_saves))
         if len(last_saves) == len(final):
-            self.update_last_outputs(f"{time.ctime()} ---> No new saves")
+            self.update_last_outputs(f"{datetime.now().isoformat()} ---> No new saves")
         else:
-            self.update_last_outputs(f"{time.ctime()} ---> {len(final) - len(last_saves)} New save/s found")
+            self.update_last_outputs(f"{datetime.now().isoformat()} ---> {len(final) - len(last_saves)} New save/s found")
             #first sorte the list by date
             final.sort(key=lambda x: datetime.strptime(x.split(' -> ')[0], '%Y.%m.%d - %H:%M:%S'))
             with open(self.save_file_path, 'w') as file:
