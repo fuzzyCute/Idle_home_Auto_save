@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "idle_home_auto_save"
+version = "1.1.5"
+dependencies = [
+    "pyperclip >= 1.8.2",
+]
+
+[project.gui-scripts]
+auto_save = "idle_home_auto_save:auto_save.run"

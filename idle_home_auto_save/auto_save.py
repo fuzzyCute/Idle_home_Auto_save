@@ -4,7 +4,6 @@
 # added a checkbox that allows users to ignore the 1000 lines limit
 
 import os
-import sys
 import time
 import tkinter as tk
 import tkinter.filedialog as filedialog
@@ -33,9 +32,8 @@ class MainProgramGUI(tk.Tk):
         # to store the number of save files found (it'll be changed everytime the program finds a save file)
         self.found_save_files = []
 
-        # get the current file folder_path, this is going to be used for a config file
-        exe_file = sys.argv[0]
-        self.current_exec_file_path = os.path.dirname(os.path.abspath(exe_file))
+        # get the current working directory, this is going to be used for a config file
+        self.current_exec_file_path = os.path.abspath(os.getcwd())
 
         # create the GUI elements or widgets or what's the name you give them
 
@@ -363,7 +361,9 @@ class MainProgramGUI(tk.Tk):
                 for line in final:
                     file.write(line + '\n')
 
-
-if __name__ == "__main__":
+def run():
     main = MainProgramGUI()
     main.mainloop()
+
+if __name__ == "__main__":
+    run()

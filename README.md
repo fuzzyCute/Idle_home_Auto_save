@@ -7,11 +7,21 @@ This works by going to vrchat's log file and getting the save string that you'd 
 
 ## How to use the program
 2 ways:
-* Downloading python and running the program yourself
-* Just run the executable that exists on the [releases page](https://github.com/fuzzyCute/Idle_home_Auto_save/releases/tag/version_1_1_4)
 
-### If you want to run the python code yourself
-Don't forget to install the dependencies, which are included in the requirements.txt file
+### Compiled executable
+Just run the executable that exists on the [releases page](https://github.com/fuzzyCute/Idle_home_Auto_save/releases/tag/version_1_1_4)
+
+### Running the python code yourself
+Install the package and its dependencies (only once):
+```
+python -m pip install .
+```
+
+After installing locally, start the program with:
+```
+pythonw -m idle_home_auto_save
+```
+Or if you’re on Windows, just launch [`auto_save.bat`](./auto_save.bat) which does just that command !
 
 ## The GUI
 
