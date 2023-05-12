@@ -285,7 +285,8 @@ class MainProgramGUI(tk.Tk):
 
             self.save_to_file(last_save_time)
 
-            time.sleep(self.time)
+            self.scan_loop_event = threading.Event()
+            self.scan_loop_event.wait(self.time)
 
         self.update_last_outputs("Program stopped")
         self.start_button.config(state="active")
@@ -303,6 +304,8 @@ class MainProgramGUI(tk.Tk):
     def stop_saves(self):
         self.is_running = False
         self.start_button.config(state="disabled")
+        if self.scan_loop_event is not None:
+            self.scan_loop_event.set()
 
     def find_more_recent_txt_files(self, path):
         txt_files = []
