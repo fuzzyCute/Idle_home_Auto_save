@@ -9,7 +9,11 @@ This works by going to vrchat's log file and getting the save string that you'd 
 2 ways:
 
 ### Compiled executable
-Just run the executable that exists on the [releases page](https://github.com/fuzzyCute/Idle_home_Auto_save/releases/tag/version_1_1_4)
+Just run the executable that exists on the [releases page](https://github.com/Baplar/Idle_home_Auto_save/releases/latest).
+
+The binary may be flagged as dangerous,
+but Chrome/Firefox should allow you to download it after a warning,
+and Windows should allow you to execute it after a warning too.
 
 ### Running the python code yourself
 Install the package and its dependencies (only once):
