@@ -44,6 +44,9 @@ If you want you can open the file clicking on button (6) and it'll open a file l
 
 You can also ignore the line limite by checking the checkbox (7)
 
+## Building the project for distribution
+See [BUILD.md](./BUILD.md)
+
 ## Disclaymer
 I did this tool because I'm a bit lazy, but I held no responsibility for what could happen if you run this
 
