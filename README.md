@@ -9,23 +9,41 @@ This works by going to vrchat's log file and getting the save string that you'd 
 2 ways:
 
 ### Compiled executable
-Just run the executable that exists on the [releases page](https://github.com/Baplar/Idle_home_Auto_save/releases/latest).
+Download the ZIP file for the Windows build that exists on
+the [releases page](https://github.com/Baplar/Idle_home_Auto_save/releases/latest).
 
-The binary may be flagged as dangerous,
-but Chrome/Firefox should allow you to download it after a warning,
-and Windows should allow you to execute it after a warning too.
+Extract it, and just launch `auto_save.exe`!
+
+The binary may be flagged as dangerous when starting it for the first time,
+but Windows should allow you to execute it after a warning,
+and will not show the warning again the next time you run it.
 
 ### Running the python code yourself
-Install the package and its dependencies (only once):
+
+To run the script directly, you need to have a version of Python 3 installed on your computer.
+You can fetch it from the [official website](https://www.python.org/downloads/).
+
+Make sure to check the option to add it to PATH, this will make it easier to run scripts and tools.
+
+#### Install the package and its dependencies (only once)
 ```
 python -m pip install .
 ```
 
-After installing locally, start the program with:
+#### After installing locally, start the program with
 ```
 pythonw -m idle_home_auto_save
 ```
-Or if you’re on Windows, just launch [`auto_save.bat`](./auto_save.bat) which does just that command !
+Or just launch [`auto_save.bat`](./auto_save.bat) which does basically the same thing !
+
+---
+
+If you have installed the package outside of a virtual environment
+(which should be the case unless you *really* know what you're doing),
+you can also just run the script `idle_home_auto_save/auto_save.pyw` directly.
+
+Just be wary that the config file will be created in the subfolder,
+instead of the root folder for the previous methods.
 
 ## The GUI
 
@@ -51,7 +69,7 @@ You can also ignore the line limite by checking the checkbox (7)
 ## Building the project for distribution
 See [BUILD.md](./BUILD.md)
 
-## Disclaymer
+## Disclaimer
 I did this tool because I'm a bit lazy, but I held no responsibility for what could happen if you run this
 
 Have a good day!

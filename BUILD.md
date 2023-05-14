@@ -43,15 +43,3 @@ Don’t forget to replace the placeholder email and domain name with your own...
  & "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe" sign /fd SHA256 /n "www.yourname.com" /t http://timestamp.digicert.com .\dist\auto_save.exe
 ```
 Don’t forget to replace the placeholder domain name with the one provided during certificate generation.
-
-#### Provide public certificate
-The binary is now signed, but the users may need or want to import the certificate
-to avoid having to deal with security warnings every time.
-You can export the public certificate:
-```ps
-Export-Certificate -Cert (Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert) -FilePath dist\yourname.crt
-```
-And you can now provide the exported `.crt` file inside the ZIP with the built `.exe` binary.
-
-Although I think that the certificate is embedded in the `.exe` file anyway,
-so this might actually be entirely unnecessary...!
