@@ -2,14 +2,14 @@
 
 ## 1.1.5
 ### Updates
-- Changed packaging to use a standard python module structure
-  (the script can still be run on its own like before though!)
 - Stop scanning loop as soon as the "stop" button is clicked,
   instead of waiting for the next loop.
 - Iterate on all lines on the fly without storing them to improve performance
 - Due to the aforementioned reading performance improvement,
   the checkbox to set a a line limit has been removed.
 - Scan all files once in the beginning, then only re-scan the latest one.
+- Added changelog document
+- Added docs for building the Windows exe from the script
 
 ## 1.1.4
 ### Updates

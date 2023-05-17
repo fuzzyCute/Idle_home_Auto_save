@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['idle_home_auto_save\\auto_save.pyw'],
+    ['auto_save.pyw'],
     pathex=[],
     binaries=[],
     datas=[],

@@ -14,14 +14,17 @@ You can choose not to use a virtual environment, but in that case,
 you need to make sure to have python and pip installed,
 and have the Scripts folder of your main python install in the PATH env variable.
 
-## Build project with dependencies (once)
+## Install project dependencies (once)
 ```sh
-pip install .
+pip install -r requirements.txt
 ```
 
 ## Compile binary
 ```sh
 pip install pyinstaller
+
+pyinstaller -F auto_save.pyw
+# or
 pyinstaller auto_save.spec
 ```
 The built binary will be generated in `dist/auto_save.exe`

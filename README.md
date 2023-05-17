@@ -27,23 +27,14 @@ Make sure to check the option to add it to PATH, this will make it easier to run
 
 #### Install the package and its dependencies (only once)
 ```
-python -m pip install .
+python -m pip install -r requirements.txt
 ```
 
 #### After installing locally, start the program with
 ```
-pythonw -m idle_home_auto_save
+pythonw auto_save.pyw
 ```
-Or just launch [`auto_save.bat`](./auto_save.bat) which does basically the same thing !
-
----
-
-If you have installed the package outside of a virtual environment
-(which should be the case unless you *really* know what you're doing),
-you can also just run the script `idle_home_auto_save/auto_save.pyw` directly.
-
-Just be wary that the config file will be created in the subfolder,
-instead of the root folder for the previous methods.
+If your Python install is integrated globally on your system, double-clicking [`auto_save.pyw`](./auto_save.pyw) should do basically the same thing !
 
 ## The GUI
 
