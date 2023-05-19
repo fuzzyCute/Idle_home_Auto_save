@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.6
+### Bug fixes
+- Improve parsing of save file and config file
+  if they contain lines that are not formatted as expected
+### Technical
+- Removed module structure introduced in 1.1.5
+
 ## 1.1.5
 ### Updates
 - Stop scanning loop as soon as the "stop" button is clicked,

@@ -1,6 +1,7 @@
 # version 1.1.5
 
 import os
+import re
 import fnmatch
 import tkinter as tk
 import tkinter.filedialog as filedialog
@@ -115,17 +116,16 @@ class MainProgramGUI(tk.Tk):
     def loadConfig(self):
         if os.path.exists(os.path.join(self.current_exec_file_path, "config.ini")):
             try:
-                with open(os.path.join(self.current_exec_file_path, "config.ini"), "r") as f:
-                    lines = f.readlines()
-                    self.folder_path = lines[0].split(" : ")[1].strip()
-                    self.save_file_path = lines[1].split(" : ")[1].strip()
-                    self.time = int(lines[2].split(" : ")[1].strip())
-                    self.name_entry.insert(tk.END, lines[3].split(" : ")[1].strip())
-                    self.path_entry.config(state="normal")
-                    self.path_entry.insert(tk.END, self.folder_path)
-                    self.path_entry.config(state="disabled")
-                    self.time_entry.insert(tk.END, f"{self.time}")
-                    self.save_file_path = os.path.join(self.folder_path, self.name_entry.get())
+                config_dict = self.parse_config()
+                self.folder_path = config_dict['folder_path']
+                self.save_file_path = config_dict['save_file_path']
+                self.time = int(config_dict['time'])
+                self.name_entry.insert(tk.END, config_dict['name'])
+                self.path_entry.config(state="normal")
+                self.path_entry.insert(tk.END, self.folder_path)
+                self.path_entry.config(state="disabled")
+                self.time_entry.insert(tk.END, f"{self.time}")
+                self.save_file_path = os.path.join(self.folder_path, self.name_entry.get())
                 self.update_last_outputs("Config file loaded")
             except:
                 self.update_last_outputs("Error while loading config file")
@@ -141,6 +141,15 @@ class MainProgramGUI(tk.Tk):
                 f.write("name : \n")
 
             self.update_last_outputs("Config file created at : " + os.path.join(self.current_exec_file_path, "config.ini"))
+
+    def parse_config(self):
+        config_dict = {}
+        with open(os.path.join(self.current_exec_file_path, "config.ini"), "r") as f:
+            for line in f:
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    config_dict[key.strip()] = value.strip()
+        return config_dict
 
     def select_path(self):
         path = filedialog.askdirectory()
@@ -220,19 +229,10 @@ class MainProgramGUI(tk.Tk):
     def copy_to_clipboard(self):
         if self.save_file_path and os.path.exists(self.save_file_path):
             try:
-                # open the save file and get the lines
-                with open(self.save_file_path, 'r') as file:
-                    the_list = file.readlines()
-                # get the dates
-                dates = []
-                for line in the_list:
-                    dates.append(line.split(' -> ')[0])
-                # get the most recent date
-                most_recent = max(dates)
-                # get the index of the most recent date
-                index = dates.index(most_recent)
-                # return the most recent line
-                pyperclip.copy(the_list[index].split()[-1])
+                # open the save file and get the latest
+                save_lines = self.read_save_file()
+                latest_save = max(save_lines, key = lambda line: line.split(' -> ')[0])
+                pyperclip.copy(latest_save.split()[-1])
                 self.update_last_outputs("Last save copied to clipboard")
             except:
                 self.update_last_outputs("No save found")
@@ -320,24 +320,33 @@ class MainProgramGUI(tk.Tk):
         return save_times
 
     def save_to_file(self, save_times):
-        last_saves = []
-
-        with open(self.save_file_path, 'r') as file:
-            for line in file.readlines():
-                last_saves.append(line[:-1:])
-
+        last_saves = self.read_save_file()
         # combine the two lists into one without repetitive lines
-
         final = list(set(save_times + last_saves))
         if len(last_saves) == len(final):
             self.update_last_outputs(f"{datetime.now().isoformat()} ---> No new saves")
         else:
             self.update_last_outputs(f"{datetime.now().isoformat()} ---> {len(final) - len(last_saves)} New save/s found")
-            #first sorte the list by date
+            # sort the list by date
             final.sort(key=lambda x: datetime.strptime(x.split(' -> ')[0], '%Y.%m.%d - %H:%M:%S'))
             with open(self.save_file_path, 'w') as file:
                 for line in final:
                     file.write(line + '\n')
+
+    def read_save_file(self):
+        last_saves = []
+        with open(self.save_file_path, 'r') as file:
+            for line in file:
+                line = line.strip()
+                if self.check_datetime_format(line):
+                    last_saves.append(line)
+        return last_saves
+
+    SAVE_ENTRY_REGEX = re.compile('\d{1,4}\.\d{1,2}\.\d{1,2} - \d{1,2}:\d{1,2}:\d{1,2} -> ')
+
+    def check_datetime_format(self, line):
+        # Exclude lines that do not start with a well-formatted timestamp and an arrow "->"
+        return (self.SAVE_ENTRY_REGEX.match(line) is not None)
 
 def run():
     main = MainProgramGUI()
